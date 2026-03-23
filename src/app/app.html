@@ -1,0 +1,1005 @@
+<div class="flex h-screen w-full bg-zinc-950 text-zinc-50 font-sans overflow-hidden relative">
+  @if (notification()) {
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-zinc-950 px-6 py-3 rounded-xl font-bold shadow-2xl flex items-center gap-3 animate-bounce">
+      <mat-icon>info</mat-icon>
+      {{ notification() }}
+    </div>
+  }
+
+  @if (gameMode() === 'setup') {
+    <div class="flex-1 flex flex-col items-center justify-center p-10 relative z-10 w-full h-full">
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <h1 class="text-6xl font-black mb-12 tracking-widest uppercase">FC26 <span class="text-emerald-500">LIFE</span></h1>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
+        <div class="bg-zinc-900/80 border border-zinc-800/80 rounded-3xl p-10 hover:border-emerald-500/50 transition-all">
+          <mat-icon class="text-7xl text-emerald-500 mb-6">work</mat-icon>
+          <h2 class="text-3xl font-black mb-4">Manager Career</h2>
+          <p class="text-zinc-400 leading-relaxed mb-6">Take control of a club, manage tactics, transfers, and lead your team to glory.</p>
+          
+          <div class="mb-6">
+            <label for="setupClubId" class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Select Club</label>
+            <select id="setupClubId" [(ngModel)]="setupClubId" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-emerald-500">
+              @for (league of world().leagues; track league.id) {
+                <optgroup [label]="league.name + ' (' + league.country + ')'">
+                  @for (club of world().clubs; track club.id) {
+                    @if (club.leagueId === league.id) {
+                      <option [value]="club.id">{{ club.name }} ({{ club.ovr }} OVR)</option>
+                    }
+                  }
+                </optgroup>
+              }
+            </select>
+          </div>
+          
+          <button (click)="startGame('manager')" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-black tracking-widest uppercase transition-all shadow-lg">Start Manager Career</button>
+        </div>
+        
+        <div class="bg-zinc-900/80 border border-zinc-800/80 rounded-3xl p-10 hover:border-blue-500/50 transition-all">
+          <mat-icon class="text-7xl text-blue-500 mb-6">directions_run</mat-icon>
+          <h2 class="text-3xl font-black mb-4">Player Career</h2>
+          <p class="text-zinc-400 leading-relaxed mb-6">Create your pro, train hard, and become a football legend.</p>
+          
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="setupPlayerName" class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Player Name</label>
+              <input id="setupPlayerName" type="text" [(ngModel)]="setupPlayerName" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label for="setupPlayerPos" class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Position</label>
+              <select id="setupPlayerPos" [(ngModel)]="setupPlayerPos" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-blue-500">
+                <option value="ST">Striker (ST)</option>
+                <option value="CAM">Midfielder (CAM)</option>
+                <option value="LW">Winger (LW)</option>
+                <option value="RW">Winger (RW)</option>
+                <option value="CB">Defender (CB)</option>
+                <option value="GK">Goalkeeper (GK)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-6">
+            <label for="setupPlayerClubId" class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Select Club</label>
+            <select id="setupPlayerClubId" [(ngModel)]="setupClubId" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-blue-500">
+              @for (league of world().leagues; track league.id) {
+                <optgroup [label]="league.name + ' (' + league.country + ')'">
+                  @for (club of world().clubs; track club.id) {
+                    @if (club.leagueId === league.id) {
+                      <option [value]="club.id">{{ club.name }} ({{ club.ovr }} OVR)</option>
+                    }
+                  }
+                </optgroup>
+              }
+            </select>
+          </div>
+          
+          <button (click)="startGame('player')" class="w-full py-4 bg-blue-500 hover:bg-blue-400 text-zinc-950 rounded-xl font-black tracking-widest uppercase transition-all shadow-lg">Start Player Career</button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <aside class="w-64 bg-zinc-900/40 border-r border-zinc-800/60 flex flex-col backdrop-blur-xl z-10">
+      <div class="h-20 flex items-center px-6 border-b border-zinc-800/60">
+        <mat-icon class="text-emerald-500 mr-3 text-3xl w-8 h-8">sports_soccer</mat-icon>
+        <span class="font-black text-2xl tracking-widest uppercase">FC26 <span class="text-emerald-500">LIFE</span></span>
+      </div>
+      <nav class="flex-1 py-6 flex flex-col gap-2 px-4 overflow-y-auto">
+        <button (click)="setTab('dashboard')" [class.bg-emerald-500]="activeTab() === 'dashboard'" [class.text-zinc-950]="activeTab() === 'dashboard'" [class.text-zinc-400]="activeTab() !== 'dashboard'" [class.hover:bg-zinc-800]="activeTab() !== 'dashboard'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+          <mat-icon class="mr-3">dashboard</mat-icon> Dashboard
+        </button>
+        <button (click)="setTab('squad')" [class.bg-emerald-500]="activeTab() === 'squad'" [class.text-zinc-950]="activeTab() === 'squad'" [class.text-zinc-400]="activeTab() !== 'squad'" [class.hover:bg-zinc-800]="activeTab() !== 'squad'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+          <mat-icon class="mr-3">groups</mat-icon> Squad
+        </button>
+        <button (click)="setTab('champions-league')" [class.bg-emerald-500]="activeTab() === 'champions-league'" [class.text-zinc-950]="activeTab() === 'champions-league'" [class.text-zinc-400]="activeTab() !== 'champions-league'" [class.hover:bg-zinc-800]="activeTab() !== 'champions-league'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+          <mat-icon class="mr-3">emoji_events</mat-icon> Champions League
+        </button>
+        @if (gameMode() === 'player') {
+          <button (click)="setTab('my-pro')" [class.bg-emerald-500]="activeTab() === 'my-pro'" [class.text-zinc-950]="activeTab() === 'my-pro'" [class.text-zinc-400]="activeTab() !== 'my-pro'" [class.hover:bg-zinc-800]="activeTab() !== 'my-pro'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+            <mat-icon class="mr-3">person</mat-icon> My Pro
+          </button>
+          <button (click)="setTab('lifestyle')" [class.bg-emerald-500]="activeTab() === 'lifestyle'" [class.text-zinc-950]="activeTab() === 'lifestyle'" [class.text-zinc-400]="activeTab() !== 'lifestyle'" [class.hover:bg-zinc-800]="activeTab() !== 'lifestyle'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+            <mat-icon class="mr-3">diamond</mat-icon> Lifestyle
+          </button>
+        }
+        @if (gameMode() === 'manager') {
+          <button (click)="setTab('transfers')" [class.bg-emerald-500]="activeTab() === 'transfers'" [class.text-zinc-950]="activeTab() === 'transfers'" [class.text-zinc-400]="activeTab() !== 'transfers'" [class.hover:bg-zinc-800]="activeTab() !== 'transfers'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+            <mat-icon class="mr-3">swap_horiz</mat-icon> Transfer Hub
+          </button>
+        }
+        <div class="my-2 border-t border-zinc-800/60"></div>
+        <button (click)="setTab('buy-club')" [class.bg-emerald-500]="activeTab() === 'buy-club'" [class.text-zinc-950]="activeTab() === 'buy-club'" [class.text-zinc-400]="activeTab() !== 'buy-club'" [class.hover:bg-zinc-800]="activeTab() !== 'buy-club'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+          <mat-icon class="mr-3">shopping_cart</mat-icon> Buy Club
+        </button>
+        @if (gameMode() === 'manager') {
+          <button (click)="openCustomizeTab()" [class.bg-emerald-500]="activeTab() === 'customize-club'" [class.text-zinc-950]="activeTab() === 'customize-club'" [class.text-zinc-400]="activeTab() !== 'customize-club'" [class.hover:bg-zinc-800]="activeTab() !== 'customize-club'" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold tracking-wide">
+            <mat-icon class="mr-3">edit</mat-icon> Customize Club
+          </button>
+        }
+      </nav>
+      
+      <div class="mt-auto p-4 border-t border-zinc-800/60">
+        <button (click)="restartCareer()" class="w-full py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
+          <mat-icon>restart_alt</mat-icon> Restart Career
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen relative">
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <header class="h-20 border-b border-zinc-800/60 flex items-center justify-between px-10 bg-zinc-950/80 backdrop-blur-md z-10 sticky top-0">
+        <div class="flex items-center gap-5">
+          <img [src]="currentClub()?.logo" class="w-12 h-12 rounded-full bg-zinc-800 border-2 border-zinc-700 shadow-lg object-contain p-1" alt="Club Logo">
+          <div>
+            <div class="text-lg font-black tracking-tight">{{ managerName() }}</div>
+            <div class="text-sm text-zinc-400 font-medium">{{ currentClub()?.name }} <span class="mx-2 text-zinc-700">|</span> {{ season() }}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="text-right border-r border-zinc-800 pr-6">
+            <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Current Date</div>
+            <div class="text-lg font-mono font-bold text-zinc-200 tracking-tight">{{ currentDateStr() | date:'mediumDate' }}</div>
+          </div>
+
+          <button (click)="toggleFullscreen()" class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors" title="Toggle Fullscreen">
+            <mat-icon class="text-zinc-400">{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+          </button>
+          
+          @if (gameMode() === 'manager') {
+            <div class="text-right border-l border-zinc-800 pl-6">
+              <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Transfer Budget</div>
+              <div class="text-lg font-mono font-bold text-emerald-400 tracking-tight">€{{ currentClub()?.budget | number }}</div>
+            </div>
+          } @else if (gameMode() === 'player') {
+            <div class="text-right border-l border-zinc-800 pl-6">
+              <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Bank Balance</div>
+              <div class="text-lg font-mono font-bold text-emerald-400 tracking-tight">€{{ myPlayer()?.bankBalance | number }}</div>
+            </div>
+            <div class="text-right border-l border-zinc-800 pl-6">
+              <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Weekly Wage</div>
+              <div class="text-lg font-mono font-bold text-zinc-200 tracking-tight">€{{ myPlayer()?.wage | number }}</div>
+            </div>
+          }
+          
+          <button (click)="advanceDay()" class="bg-zinc-100 hover:bg-white text-zinc-950 px-6 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all flex items-center gap-2 hover:scale-105 active:scale-95 shadow-lg">
+            Advance Day <mat-icon class="text-[18px] w-[18px] h-[18px]">fast_forward</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-auto p-10 z-10">
+        @if (activeTab() === 'lifestyle') {
+          <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-black mb-8 tracking-tight flex items-center gap-3">
+              <mat-icon class="text-emerald-500 text-4xl w-10 h-10">diamond</mat-icon> Lifestyle & Assets
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+              <!-- Houses -->
+              <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-200">
+                  <mat-icon class="text-zinc-400">home</mat-icon> Real Estate
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (house of availableHouses; track house.id) {
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all flex flex-col">
+                      <mat-icon class="text-4xl text-emerald-500/80 mb-3">{{ house.icon }}</mat-icon>
+                      <h4 class="font-bold text-lg mb-1">{{ house.name }}</h4>
+                      <p class="text-xs text-zinc-500 mb-4 flex-1">{{ house.desc }}</p>
+                      <div class="flex items-center justify-between mt-auto">
+                        <span class="font-mono text-emerald-400 font-bold">€{{ house.price | number }}</span>
+                        <button (click)="buyLifestyleItem('house', house)" [disabled]="(myPlayer()?.bankBalance || 0) < house.price" class="px-4 py-2 bg-zinc-800 hover:bg-emerald-500 hover:text-zinc-950 disabled:opacity-50 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-50 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">Buy</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Cars -->
+              <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-200">
+                  <mat-icon class="text-zinc-400">directions_car</mat-icon> Vehicles
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (car of availableCars; track car.id) {
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all flex flex-col">
+                      <mat-icon class="text-4xl text-emerald-500/80 mb-3">{{ car.icon }}</mat-icon>
+                      <h4 class="font-bold text-lg mb-1">{{ car.name }}</h4>
+                      <p class="text-xs text-zinc-500 mb-4 flex-1">{{ car.desc }}</p>
+                      <div class="flex items-center justify-between mt-auto">
+                        <span class="font-mono text-emerald-400 font-bold">€{{ car.price | number }}</span>
+                        <button (click)="buyLifestyleItem('car', car)" [disabled]="(myPlayer()?.bankBalance || 0) < car.price" class="px-4 py-2 bg-zinc-800 hover:bg-emerald-500 hover:text-zinc-950 disabled:opacity-50 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-50 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">Buy</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Airplanes -->
+              <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-200">
+                  <mat-icon class="text-zinc-400">flight</mat-icon> Aviation
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (airplane of availableAirplanes; track airplane.id) {
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all flex flex-col">
+                      <mat-icon class="text-4xl text-emerald-500/80 mb-3">{{ airplane.icon }}</mat-icon>
+                      <h4 class="font-bold text-lg mb-1">{{ airplane.name }}</h4>
+                      <p class="text-xs text-zinc-500 mb-4 flex-1">{{ airplane.desc }}</p>
+                      <div class="flex items-center justify-between mt-auto">
+                        <span class="font-mono text-emerald-400 font-bold">€{{ airplane.price | number }}</span>
+                        <button (click)="buyLifestyleItem('airplane', airplane)" [disabled]="(myPlayer()?.bankBalance || 0) < airplane.price" class="px-4 py-2 bg-zinc-800 hover:bg-emerald-500 hover:text-zinc-950 disabled:opacity-50 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-50 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">Buy</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Buses -->
+              <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-200">
+                  <mat-icon class="text-zinc-400">directions_bus</mat-icon> Coaches & Buses
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (bus of availableBuses; track bus.id) {
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all flex flex-col">
+                      <mat-icon class="text-4xl text-emerald-500/80 mb-3">{{ bus.icon }}</mat-icon>
+                      <h4 class="font-bold text-lg mb-1">{{ bus.name }}</h4>
+                      <p class="text-xs text-zinc-500 mb-4 flex-1">{{ bus.desc }}</p>
+                      <div class="flex items-center justify-between mt-auto">
+                        <span class="font-mono text-emerald-400 font-bold">€{{ bus.price | number }}</span>
+                        <button (click)="buyLifestyleItem('bus', bus)" [disabled]="(myPlayer()?.bankBalance || 0) < bus.price" class="px-4 py-2 bg-zinc-800 hover:bg-emerald-500 hover:text-zinc-950 disabled:opacity-50 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-50 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">Buy</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Yachts -->
+              <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-200">
+                  <mat-icon class="text-zinc-400">sailing</mat-icon> Yachts & Boats
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (yacht of availableYachts; track yacht.id) {
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all flex flex-col">
+                      <mat-icon class="text-4xl text-emerald-500/80 mb-3">{{ yacht.icon }}</mat-icon>
+                      <h4 class="font-bold text-lg mb-1">{{ yacht.name }}</h4>
+                      <p class="text-xs text-zinc-500 mb-4 flex-1">{{ yacht.desc }}</p>
+                      <div class="flex items-center justify-between mt-auto">
+                        <span class="font-mono text-emerald-400 font-bold">€{{ yacht.price | number }}</span>
+                        <button (click)="buyLifestyleItem('yacht', yacht)" [disabled]="(myPlayer()?.bankBalance || 0) < yacht.price" class="px-4 py-2 bg-zinc-800 hover:bg-emerald-500 hover:text-zinc-950 disabled:opacity-50 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-50 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">Buy</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Owned Assets -->
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8">
+              <h3 class="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-200">
+                <mat-icon class="text-zinc-400">inventory_2</mat-icon> My Assets
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                  <h4 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Properties</h4>
+                  @if (myPlayer()?.houses?.length) {
+                    <ul class="space-y-2">
+                      @for (h of myPlayer()?.houses; track h) {
+                        <li class="flex items-center gap-2 text-zinc-300"><mat-icon class="text-emerald-500 text-sm w-4 h-4">check_circle</mat-icon> {{ h }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="text-zinc-600 italic text-sm">No properties owned.</p>
+                  }
+                </div>
+                
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                  <h4 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Vehicles</h4>
+                  @if (myPlayer()?.cars?.length) {
+                    <ul class="space-y-2">
+                      @for (c of myPlayer()?.cars; track c) {
+                        <li class="flex items-center gap-2 text-zinc-300"><mat-icon class="text-emerald-500 text-sm w-4 h-4">check_circle</mat-icon> {{ c }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="text-zinc-600 italic text-sm">No vehicles owned.</p>
+                  }
+                </div>
+                
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                  <h4 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Aviation</h4>
+                  @if (myPlayer()?.airplanes?.length) {
+                    <ul class="space-y-2">
+                      @for (a of myPlayer()?.airplanes; track a) {
+                        <li class="flex items-center gap-2 text-zinc-300"><mat-icon class="text-emerald-500 text-sm w-4 h-4">check_circle</mat-icon> {{ a }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="text-zinc-600 italic text-sm">No aircraft owned.</p>
+                  }
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                  <h4 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Coaches & Buses</h4>
+                  @if (myPlayer()?.buses?.length) {
+                    <ul class="space-y-2">
+                      @for (b of myPlayer()?.buses; track b) {
+                        <li class="flex items-center gap-2 text-zinc-300"><mat-icon class="text-emerald-500 text-sm w-4 h-4">check_circle</mat-icon> {{ b }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="text-zinc-600 italic text-sm">No buses owned.</p>
+                  }
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                  <h4 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Yachts</h4>
+                  @if (myPlayer()?.yachts?.length) {
+                    <ul class="space-y-2">
+                      @for (y of myPlayer()?.yachts; track y) {
+                        <li class="flex items-center gap-2 text-zinc-300"><mat-icon class="text-emerald-500 text-sm w-4 h-4">check_circle</mat-icon> {{ y }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="text-zinc-600 italic text-sm">No yachts owned.</p>
+                  }
+                </div>
+                
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                  <h4 class="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Clubs Owned</h4>
+                  @if (myPlayer()?.ownedClubs?.length) {
+                    <ul class="space-y-2">
+                      @for (c of myPlayer()?.ownedClubs; track c) {
+                        <li class="flex items-center gap-2 text-zinc-300"><mat-icon class="text-emerald-500 text-sm w-4 h-4">check_circle</mat-icon> {{ c }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="text-zinc-600 italic text-sm">No clubs owned.</p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'dashboard') {
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <div class="xl:col-span-2 bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800/80 rounded-3xl p-8 relative overflow-hidden shadow-2xl group">
+              <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 transition-opacity group-hover:opacity-70"></div>
+              <div class="flex items-center gap-2 mb-8">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <div class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Next Match</div>
+              </div>
+              
+              @if (myNextFixture()) {
+                <div class="flex items-center justify-between mb-10 relative z-10">
+                  <div class="flex-1 flex flex-col items-center">
+                    <img [src]="getClub(myNextFixture()!.homeClubId)?.logo" class="w-28 h-28 bg-zinc-900/80 rounded-2xl mb-4 border border-zinc-700/50 shadow-xl backdrop-blur-sm object-contain p-2" alt="Home Club Logo">
+                    <div class="font-black text-2xl tracking-tight text-center">{{ getClub(myNextFixture()!.homeClubId)?.name }}</div>
+                  </div>
+                  
+                  <div class="px-8 text-center flex flex-col items-center justify-center">
+                    <div class="text-5xl font-black text-zinc-800 italic tracking-tighter mb-4">VS</div>
+                    <div class="inline-block px-4 py-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs font-bold text-zinc-300 tracking-wider mb-2">
+                      {{ myNextFixture()!.date | date:'mediumDate' }}
+                    </div>
+                    <div class="text-sm text-zinc-500 font-medium">{{ myNextFixture()!.competition }}</div>
+                  </div>
+                  
+                  <div class="flex-1 flex flex-col items-center">
+                    <img [src]="getClub(myNextFixture()!.awayClubId)?.logo" class="w-28 h-28 bg-zinc-900/80 rounded-2xl mb-4 border border-zinc-700/50 shadow-xl backdrop-blur-sm object-contain p-2" alt="Away Club Logo">
+                    <div class="font-black text-2xl tracking-tight text-center">{{ getClub(myNextFixture()!.awayClubId)?.name }}</div>
+                  </div>
+                </div>
+                
+                @if (currentDateStr() === myNextFixture()!.date) {
+                  <button (click)="playMatch(myNextFixture()!)" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-2xl font-black text-lg tracking-widest uppercase transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] relative z-10">
+                    Play Match
+                  </button>
+                } @else {
+                  <button (click)="simulateToNextMatch()" class="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-2xl font-black text-lg tracking-widest uppercase transition-all relative z-10">
+                    Simulate to Matchday
+                  </button>
+                }
+              } @else {
+                <div class="text-center text-zinc-500 italic py-10">No upcoming fixtures scheduled.</div>
+              }
+            </div>
+
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8 backdrop-blur-sm flex flex-col">
+              <div class="flex items-center justify-between mb-6">
+                <div class="text-xs text-zinc-400 font-bold uppercase tracking-widest">League Table</div>
+              </div>
+              
+              <div class="flex-1 flex flex-col justify-between">
+                <div class="grid grid-cols-12 text-[10px] text-zinc-500 font-bold uppercase tracking-widest pb-3 border-b border-zinc-800/80">
+                  <div class="col-span-1">#</div>
+                  <div class="col-span-7">Club</div>
+                  <div class="col-span-2 text-center">PL</div>
+                  <div class="col-span-2 text-right">PTS</div>
+                </div>
+                
+                <div class="space-y-1 mt-3 overflow-y-auto max-h-[300px] pr-2">
+                  @for (team of leagueTable(); track team.id; let i = $index) {
+                    <div class="grid grid-cols-12 text-sm items-center py-2.5 px-2 rounded-lg transition-colors" 
+                         [class.bg-zinc-800/40]="team.id === currentClubId()"
+                         [class.text-emerald-400]="team.id === currentClubId()"
+                         [class.font-bold]="team.id === currentClubId()"
+                         [class.text-zinc-300]="team.id !== currentClubId()">
+                      <div class="col-span-1 font-mono text-xs" [class.text-zinc-500]="team.id !== currentClubId()">{{ i + 1 }}</div>
+                      <div class="col-span-7 truncate pr-2 flex items-center gap-2">
+                        <img [src]="team.logo" class="w-5 h-5 rounded-full object-contain bg-zinc-800 p-0.5" alt="Team Logo">
+                        {{ team.name }}
+                      </div>
+                      <div class="col-span-2 text-center font-mono text-xs">{{ team.played }}</div>
+                      <div class="col-span-2 text-right font-mono text-sm">{{ team.points }}</div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8 backdrop-blur-sm flex flex-col mt-8 xl:col-span-3">
+              <div class="flex items-center justify-between mb-6">
+                <div class="text-xs text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                  <mat-icon class="text-emerald-500 text-sm w-4 h-4">public</mat-icon> World News & Transfers
+                </div>
+              </div>
+              <div class="flex-1 overflow-y-auto max-h-[200px] space-y-3 pr-2">
+                @if (newsFeed().length === 0) {
+                  <div class="text-zinc-500 italic text-sm">No recent news. Advance the days to see world events.</div>
+                }
+                @for (news of newsFeed(); track $index) {
+                  <div class="text-sm text-zinc-300 bg-zinc-800/30 px-4 py-3 rounded-xl border border-zinc-800/50 flex items-center gap-3">
+                    <mat-icon class="text-blue-400 text-sm w-4 h-4">campaign</mat-icon>
+                    {{ news }}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'live-match' && activeMatch()) {
+          <div class="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+            <div class="text-center text-zinc-500 font-bold uppercase tracking-widest text-xs mb-6">{{ activeMatch()!.competition }}</div>
+            
+            <div class="flex justify-between items-center mb-8 bg-zinc-950 p-8 rounded-2xl border border-zinc-800/50">
+              <div class="flex flex-col items-center w-1/3">
+                <img [src]="getClub(activeMatch()!.homeClubId)?.logo" class="w-24 h-24 mb-4 object-contain" alt="Home Team">
+                <span class="font-black text-2xl text-center">{{ getClub(activeMatch()!.homeClubId)?.name }}</span>
+              </div>
+              
+              <div class="text-center w-1/3">
+                <div class="text-7xl font-black text-emerald-400 mb-2 tracking-tighter">
+                  {{ activeMatch()!.homeScore }} - {{ activeMatch()!.awayScore }}
+                </div>
+                <div class="text-2xl font-mono text-zinc-400 font-bold">
+                  {{ matchMinute() }}'
+                  @if (!isMatchPlaying() && matchMinute() >= 90) { <span class="text-red-500 ml-2">FT</span> }
+                </div>
+              </div>
+              
+              <div class="flex flex-col items-center w-1/3">
+                <img [src]="getClub(activeMatch()!.awayClubId)?.logo" class="w-24 h-24 mb-4 object-contain" alt="Away Team">
+                <span class="font-black text-2xl text-center">{{ getClub(activeMatch()!.awayClubId)?.name }}</span>
+              </div>
+            </div>
+            
+            <div class="bg-zinc-950 rounded-2xl p-6 h-80 overflow-y-auto flex flex-col gap-3 border border-zinc-800/50">
+              @for (event of matchEvents(); track $index) {
+                <div class="flex items-center gap-4 text-sm bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                  <span class="font-mono text-emerald-500 font-black text-lg w-10">{{ event.minute }}'</span>
+                  @if (event.type === 'goal') {
+                    <mat-icon class="text-zinc-300 text-lg w-5 h-5">sports_soccer</mat-icon>
+                  } @else if (event.type === 'yellow_card') {
+                    <div class="w-4 h-5 bg-yellow-500 rounded-sm"></div>
+                  } @else if (event.type === 'red_card') {
+                    <div class="w-4 h-5 bg-red-500 rounded-sm"></div>
+                  }
+                  <span class="font-bold text-zinc-100 text-base">{{ event.player }}</span>
+                  <span class="text-zinc-500 font-medium">({{ event.club }})</span>
+                  @if (event.type === 'goal') {
+                    <span class="ml-auto text-xs font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Goal</span>
+                  } @else if (event.type === 'yellow_card') {
+                    <span class="ml-auto text-xs font-bold uppercase tracking-widest text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full">Yellow Card</span>
+                  } @else if (event.type === 'red_card') {
+                    <span class="ml-auto text-xs font-bold uppercase tracking-widest text-red-500 bg-red-500/10 px-3 py-1 rounded-full">Red Card</span>
+                  }
+                </div>
+              }
+              @if (matchEvents().length === 0) {
+                <div class="text-zinc-500 text-center mt-10 italic">No events yet...</div>
+              }
+            </div>
+            
+            @if (!isMatchPlaying() && matchMinute() >= 90) {
+              <button (click)="closeMatch()" class="w-full mt-8 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-xl rounded-2xl uppercase tracking-widest transition-all shadow-lg">Continue</button>
+            }
+          </div>
+        }
+
+        @if (activeTab() === 'champions-league') {
+          <div class="max-w-7xl mx-auto">
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl overflow-hidden backdrop-blur-sm shadow-xl">
+              <div class="p-8 border-b border-zinc-800/80 flex justify-between items-center bg-zinc-900/80">
+                <div>
+                  <h2 class="text-2xl font-black tracking-tight flex items-center gap-3">
+                    <mat-icon class="text-emerald-500">emoji_events</mat-icon> UEFA Champions League
+                  </h2>
+                  <p class="text-sm text-zinc-500 mt-1 font-medium">The pinnacle of European club football.</p>
+                </div>
+              </div>
+              
+              <div class="p-8">
+                @if (uclFixtures().length === 0) {
+                  <div class="text-center text-zinc-500 italic py-10">The competition has not started yet.</div>
+                } @else {
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @for (fixture of uclFixtures(); track fixture.id) {
+                      <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col">
+                        <div class="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-4 flex justify-between">
+                          <span>{{ fixture.competition }}</span>
+                          <span>{{ fixture.date | date:'mediumDate' }}</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                          <div class="flex items-center gap-3 w-2/5">
+                            <img [src]="getClub(fixture.homeClubId)?.logo" class="w-8 h-8 object-contain" alt="Home Club Logo">
+                            <span class="font-bold truncate" [class.text-emerald-400]="fixture.played && fixture.homeScore > fixture.awayScore">{{ getClub(fixture.homeClubId)?.name }}</span>
+                          </div>
+                          
+                          <div class="w-1/5 text-center font-mono font-black text-xl bg-zinc-900 py-1 rounded-lg border border-zinc-800">
+                            @if (fixture.played) {
+                              {{ fixture.homeScore }} - {{ fixture.awayScore }}
+                            } @else {
+                              -
+                            }
+                          </div>
+                          
+                          <div class="flex items-center gap-3 w-2/5 justify-end">
+                            <span class="font-bold truncate text-right" [class.text-emerald-400]="fixture.played && fixture.awayScore > fixture.homeScore">{{ getClub(fixture.awayClubId)?.name }}</span>
+                            <img [src]="getClub(fixture.awayClubId)?.logo" class="w-8 h-8 object-contain" alt="Away Club Logo">
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Club World Cup -->
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl overflow-hidden backdrop-blur-sm shadow-xl mt-8">
+              <div class="p-8 border-b border-zinc-800/80 flex justify-between items-center bg-zinc-900/80">
+                <div>
+                  <h2 class="text-2xl font-black tracking-tight flex items-center gap-3">
+                    <mat-icon class="text-emerald-500">public</mat-icon> Club World Cup
+                  </h2>
+                  <p class="text-sm text-zinc-500 mt-1 font-medium">The ultimate global club competition.</p>
+                </div>
+              </div>
+              
+              <div class="p-8">
+                @if (cwcFixtures().length === 0) {
+                  <div class="text-center text-zinc-500 italic py-10">The competition has not started yet.</div>
+                } @else {
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @for (fixture of cwcFixtures(); track fixture.id) {
+                      <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col">
+                        <div class="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-4 flex justify-between">
+                          <span>{{ fixture.competition }}</span>
+                          <span>{{ fixture.date | date:'mediumDate' }}</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                          <div class="flex items-center gap-3 w-2/5">
+                            <img [src]="getClub(fixture.homeClubId)?.logo" class="w-8 h-8 object-contain" alt="Home Club Logo">
+                            <span class="font-bold truncate" [class.text-emerald-400]="fixture.played && fixture.homeScore > fixture.awayScore">{{ getClub(fixture.homeClubId)?.name }}</span>
+                          </div>
+                          
+                          <div class="w-1/5 text-center font-mono font-black text-xl bg-zinc-900 py-1 rounded-lg border border-zinc-800">
+                            @if (fixture.played) {
+                              {{ fixture.homeScore }} - {{ fixture.awayScore }}
+                            } @else {
+                              -
+                            }
+                          </div>
+                          
+                          <div class="flex items-center gap-3 w-2/5 justify-end">
+                            <span class="font-bold truncate text-right" [class.text-emerald-400]="fixture.played && fixture.awayScore > fixture.homeScore">{{ getClub(fixture.awayClubId)?.name }}</span>
+                            <img [src]="getClub(fixture.awayClubId)?.logo" class="w-8 h-8 object-contain" alt="Away Club Logo">
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'squad') {
+          <div class="max-w-7xl mx-auto">
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl overflow-hidden backdrop-blur-sm shadow-xl">
+              <div class="p-8 border-b border-zinc-800/80 flex justify-between items-center bg-zinc-900/80">
+                <div>
+                  <h2 class="text-2xl font-black tracking-tight">First Team Squad</h2>
+                  <p class="text-sm text-zinc-500 mt-1 font-medium">{{ clubSquad().length }} Players Available</p>
+                </div>
+              </div>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-zinc-950/80 text-[10px] text-zinc-500 font-bold uppercase tracking-widest border-b border-zinc-800/80">
+                      <th class="p-5 w-24 text-center">Pos</th>
+                      <th class="p-5">Player Name</th>
+                      <th class="p-5 text-center w-24">Age</th>
+                      <th class="p-5 text-center w-24">OVR</th>
+                      <th class="p-5 w-40">Value</th>
+                      <th class="p-5 w-40">Contract</th>
+                      <th class="p-5 w-40">Morale</th>
+                      <th class="p-5 w-64">Fitness</th>
+                      <th class="p-5 w-24 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-zinc-800/40">
+                    @for (player of clubSquad(); track player.id) {
+                      <tr class="hover:bg-zinc-800/40 transition-colors group cursor-pointer" [class.bg-emerald-900/20]="player.id === myPlayerId()">
+                        <td class="p-5 text-center">
+                          <span class="inline-block w-10 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-xs font-black text-zinc-300 shadow-sm">{{ player.position }}</span>
+                        </td>
+                        <td class="p-5 font-bold text-zinc-200 text-base flex items-center gap-2">
+                          {{ player.name }}
+                          @if (player.id === myPlayerId()) {
+                            <span class="bg-emerald-500 text-zinc-950 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">You</span>
+                          }
+                        </td>
+                        <td class="p-5 text-center font-mono text-zinc-400">{{ player.age }}</td>
+                        <td class="p-5 text-center">
+                          <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono font-bold text-lg">
+                            {{ player.ovr }}
+                          </div>
+                        </td>
+                        <td class="p-5 font-mono text-sm text-zinc-400">€{{ player.value | number }}</td>
+                        <td class="p-5 font-mono text-sm text-zinc-400">{{ player.contractEndDate | date:'yyyy' }}</td>
+                        <td class="p-5">
+                          <div class="flex items-center gap-2 text-sm font-medium">
+                            <mat-icon class="text-[18px] w-[18px] h-[18px]" 
+                                      [class.text-emerald-500]="player.morale === 'Excellent'" 
+                                      [class.text-amber-500]="player.morale === 'Okay'" 
+                                      [class.text-blue-500]="player.morale === 'Good'"
+                                      [class.text-red-500]="player.morale === 'Poor'">
+                              mood
+                            </mat-icon>
+                            <span class="text-zinc-300">{{ player.morale }}</span>
+                          </div>
+                        </td>
+                        <td class="p-5">
+                          <div class="flex items-center gap-4">
+                            <div class="flex-1 h-2.5 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50">
+                              <div class="h-full rounded-full transition-all duration-500" 
+                                   [style.width.%]="player.fitness" 
+                                   [class.bg-emerald-500]="player.fitness >= 80" 
+                                   [class.bg-amber-500]="player.fitness >= 60 && player.fitness < 80" 
+                                   [class.bg-red-500]="player.fitness < 60">
+                              </div>
+                            </div>
+                            <span class="text-xs font-mono font-bold text-zinc-400 w-10 text-right">{{ player.fitness }}%</span>
+                          </div>
+                        </td>
+                        <td class="p-5 text-right">
+                          <button (click)="openContractNegotiation(player)" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
+                            Manage
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'transfers') {
+          <div class="max-w-7xl mx-auto">
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl overflow-hidden backdrop-blur-sm shadow-xl">
+              <div class="p-8 border-b border-zinc-800/80 flex justify-between items-center bg-zinc-900/80">
+                <div>
+                  <h2 class="text-2xl font-black tracking-tight">Transfer Hub</h2>
+                  <p class="text-sm text-zinc-500 mt-1 font-medium">Scout and sign players from around the world.</p>
+                </div>
+              </div>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-zinc-950/80 text-[10px] text-zinc-500 font-bold uppercase tracking-widest border-b border-zinc-800/80">
+                      <th class="p-5 w-24 text-center">Pos</th>
+                      <th class="p-5">Player Name</th>
+                      <th class="p-5 text-center w-24">Age</th>
+                      <th class="p-5 text-center w-24">OVR</th>
+                      <th class="p-5 w-40">Value</th>
+                      <th class="p-5 w-40 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-zinc-800/40">
+                    @for (player of transferMarket(); track player.id) {
+                      <tr class="hover:bg-zinc-800/40 transition-colors group cursor-pointer">
+                        <td class="p-5 text-center">
+                          <span class="inline-block w-10 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-xs font-black text-zinc-300 shadow-sm">{{ player.position }}</span>
+                        </td>
+                        <td class="p-5 font-bold text-zinc-200 text-base">{{ player.name }}</td>
+                        <td class="p-5 text-center font-mono text-zinc-400">{{ player.age }}</td>
+                        <td class="p-5 text-center">
+                          <div class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono font-bold text-lg">
+                            {{ player.ovr }}
+                          </div>
+                        </td>
+                        <td class="p-5 font-mono text-sm text-zinc-400">€{{ player.value | number }}</td>
+                        <td class="p-5 text-right">
+                          <button (click)="buyPlayer(player)" 
+                                  [disabled]="currentClub()?.budget! < player.value"
+                                  [class.opacity-50]="currentClub()?.budget! < player.value"
+                                  [class.cursor-not-allowed]="currentClub()?.budget! < player.value"
+                                  class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl text-xs font-black tracking-widest uppercase transition-all shadow-lg">
+                            Sign
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'my-pro' && myPlayer()) {
+          <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800/80 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <div class="relative z-10 flex flex-col items-center">
+                  <div class="w-32 h-32 rounded-full bg-zinc-800 border-4 border-zinc-700 mb-6 flex items-center justify-center overflow-hidden">
+                    <mat-icon class="text-7xl text-zinc-500">person</mat-icon>
+                  </div>
+                  <h2 class="text-3xl font-black tracking-tight mb-1">{{ myPlayer()?.name }}</h2>
+                  <div class="flex items-center gap-3 mb-6">
+                    <span class="px-3 py-1 bg-zinc-800 rounded-lg text-sm font-bold text-zinc-300">{{ myPlayer()?.position }}</span>
+                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-bold">{{ currentClub()?.name }}</span>
+                  </div>
+                  
+                  <div class="w-full grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-zinc-800/50 rounded-2xl p-4 text-center">
+                      <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Overall</div>
+                      <div class="text-4xl font-mono font-black text-emerald-400">{{ myPlayer()?.ovr }}</div>
+                    </div>
+                    <div class="bg-zinc-800/50 rounded-2xl p-4 text-center">
+                      <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Value</div>
+                      <div class="text-xl font-mono font-bold text-zinc-200 mt-2">€{{ myPlayer()?.value | number }}</div>
+                    </div>
+                  </div>
+
+                  <div class="w-full bg-zinc-800/30 border border-zinc-800/80 rounded-2xl p-4 mb-8">
+                    <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-3 text-center">Contract Details</div>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="text-zinc-400">Expires</span>
+                        <span class="font-mono font-bold text-zinc-200">{{ myPlayer()?.contractEndDate | date:'mediumDate' }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-zinc-400">Release Clause</span>
+                        <span class="font-mono font-bold text-zinc-200">€{{ myPlayer()?.releaseClause | number }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button (click)="trainPlayer()" class="w-full py-4 bg-blue-500 hover:bg-blue-400 text-zinc-950 rounded-2xl font-black text-lg tracking-widest uppercase transition-all shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                    Train Player
+                  </button>
+                </div>
+              </div>
+
+              <div class="lg:col-span-2 bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-8 backdrop-blur-sm">
+                <h3 class="text-xl font-black mb-6">Attributes</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <div class="flex justify-between text-sm font-bold mb-2">
+                      <span class="text-zinc-400">Pace</span>
+                      <span class="text-emerald-400 font-mono">{{ myPlayer()?.pace }}</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="myPlayer()?.pace"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm font-bold mb-2">
+                      <span class="text-zinc-400">Shooting</span>
+                      <span class="text-emerald-400 font-mono">{{ myPlayer()?.shooting }}</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="myPlayer()?.shooting"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm font-bold mb-2">
+                      <span class="text-zinc-400">Passing</span>
+                      <span class="text-emerald-400 font-mono">{{ myPlayer()?.passing }}</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="myPlayer()?.passing"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm font-bold mb-2">
+                      <span class="text-zinc-400">Dribbling</span>
+                      <span class="text-emerald-400 font-mono">{{ myPlayer()?.dribbling }}</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="myPlayer()?.dribbling"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm font-bold mb-2">
+                      <span class="text-zinc-400">Defending</span>
+                      <span class="text-emerald-400 font-mono">{{ myPlayer()?.defending }}</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="myPlayer()?.defending"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm font-bold mb-2">
+                      <span class="text-zinc-400">Physical</span>
+                      <span class="text-emerald-400 font-mono">{{ myPlayer()?.physical }}</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="myPlayer()?.physical"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'buy-club') {
+          <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-3xl font-black tracking-tight">Club Acquisitions</h2>
+                <p class="text-zinc-400 mt-1">
+                  @if (gameMode() === 'manager') {
+                    Purchase a new club to manage. This will replace your current club.
+                  } @else {
+                    Purchase a club to become its owner.
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              @for (club of world().clubs; track club.id) {
+                <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl p-6 backdrop-blur-sm flex flex-col hover:border-emerald-500/50 transition-colors group">
+                  <div class="flex justify-between items-start mb-6">
+                    <img [src]="club.logo" class="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 shadow-lg group-hover:scale-110 transition-transform object-contain p-1" alt="Club Logo">
+                    <div class="text-right">
+                      <div class="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono font-bold text-sm">
+                        {{ club.ovr }} OVR
+                      </div>
+                    </div>
+                  </div>
+                  <h3 class="text-xl font-black text-zinc-100 mb-1">{{ club.name }}</h3>
+                  
+                  <div class="mt-auto pt-6 border-t border-zinc-800/80 flex items-center justify-between">
+                    <div class="font-mono font-bold text-lg text-zinc-300">€{{ club.ovr * 10000000 | number }}</div>
+                    <button (click)="buyClub(club)" 
+                            [disabled]="gameMode() === 'manager' ? currentClub()?.budget! < club.ovr * 10000000 : (myPlayer()?.bankBalance || 0) < club.ovr * 10000000"
+                            [class.opacity-50]="gameMode() === 'manager' ? currentClub()?.budget! < club.ovr * 10000000 : (myPlayer()?.bankBalance || 0) < club.ovr * 10000000"
+                            [class.cursor-not-allowed]="gameMode() === 'manager' ? currentClub()?.budget! < club.ovr * 10000000 : (myPlayer()?.bankBalance || 0) < club.ovr * 10000000"
+                            class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl text-sm font-black tracking-widest uppercase transition-all shadow-lg">
+                      Buy Club
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'customize-club') {
+          <div class="max-w-3xl mx-auto">
+            <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-3xl overflow-hidden backdrop-blur-sm shadow-xl p-10">
+              <h2 class="text-3xl font-black tracking-tight mb-2">Customize Club</h2>
+              <p class="text-zinc-400 mb-8">Change your club's identity. These changes will be reflected immediately across the world.</p>
+              
+              <div class="flex flex-col md:flex-row gap-8 items-start">
+                <div class="w-32 h-32 rounded-3xl bg-zinc-800 border-2 border-zinc-700 shadow-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-2">
+                  @if (customizeClubLogo()) {
+                    <img [src]="customizeClubLogo()" class="w-full h-full object-contain" alt="Custom Club Logo">
+                  } @else {
+                    <mat-icon class="text-5xl text-zinc-600">image</mat-icon>
+                  }
+                </div>
+                
+                <div class="flex-1 space-y-6 w-full">
+                  <div>
+                    <label for="customizeClubName" class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Club Name</label>
+                    <input id="customizeClubName" type="text" [(ngModel)]="customizeClubName" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors">
+                  </div>
+                  
+                  <div>
+                    <label for="customizeClubLogo" class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Logo URL</label>
+                    <input id="customizeClubLogo" type="text" [(ngModel)]="customizeClubLogo" placeholder="https://example.com/logo.png" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors">
+                    <p class="text-xs text-zinc-500 mt-2">Provide a direct link to an image (PNG, JPG, SVG).</p>
+                  </div>
+                  
+                  <button (click)="saveClubCustomization()" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-black tracking-widest uppercase transition-all shadow-lg">
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Contract Negotiation Modal -->
+      @if (manageContractPlayer()) {
+        <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-black tracking-tight">Manage Contract</h2>
+              <button (click)="closeContractNegotiation()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
+                <mat-icon class="text-zinc-400 text-sm">close</mat-icon>
+              </button>
+            </div>
+            
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-zinc-200">{{ manageContractPlayer()?.name }}</h3>
+              <p class="text-sm text-zinc-500">Current Wage: €{{ manageContractPlayer()?.wage | number }} | Expires: {{ manageContractPlayer()?.contractEndDate | date:'yyyy' }}</p>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+              <div>
+                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">
+                  Offered Wage (€)
+                  <input type="number" [ngModel]="contractOfferWage()" (ngModelChange)="contractOfferWage.set($event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors mt-2">
+                </label>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">
+                  Contract Length (Years)
+                  <input type="number" [ngModel]="contractOfferYears()" (ngModelChange)="contractOfferYears.set($event)" min="1" max="5" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors mt-2">
+                </label>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">
+                  Release Clause (€)
+                  <input type="number" [ngModel]="contractOfferReleaseClause()" (ngModelChange)="contractOfferReleaseClause.set($event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors mt-2">
+                </label>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <button (click)="sellPlayer(manageContractPlayer()!)" class="flex-1 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold tracking-wide transition-colors">
+                Sell Player
+              </button>
+              <button (click)="proposeContract()" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-bold tracking-wide transition-colors shadow-lg">
+                Propose
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+    </main>
+  }
+</div>
